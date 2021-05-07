@@ -85,7 +85,7 @@ def preprocess(text):
             preprocessed += i
     return preprocessed
 
-#Edit the below file to the path of the file, available [here]( ), on your computer.
+#Edit the below line to the path of the file on your computer.
 book  = open('/histeng.txt')
 file = book.read()
 book.close()
