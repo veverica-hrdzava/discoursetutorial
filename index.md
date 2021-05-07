@@ -1,21 +1,16 @@
 # Discourse Segmentation Tutorial: TextTiling
-
-In this short Discourse Parsing tutorial, we will be discussing how to use the `TextTiling` algorithm available in the Natural Language Toolkit, a simple tool for breaking text up into separate topic subsections. This will be followed by a discussion of WindowDiff, which can assess the performance of machine discourse segmentation and a brief discussion of discourse segmentation and parsing broadly, with some more recent applications.
+In this short Discourse Parsing tutorial, we will be discussing how to use the `TextTiling` tool available in the Natural Language Toolkit, a simple tool for breaking text up into separate topic subsections. This will be followed by a discussion of WindowDiff, which can assess the performance of machine discourse segmentation and a brief discussion of discourse segmentation and parsing broadly, with some more recent applications.
 
 
 ## 1.1. Preliminaries: Introduction
+The structure of language is often understood to be largely intrasentential in nature. In this understanding of structure, a sentence is constructed of a finite number of structural building blocks. The parts of a sentence express relationships: a subject, a verb, maybe a direct object or an indirect object or some other modifier, and each element is a member of a subset of a finite set of structural categories: overt subjects can be nouns, or pronouns, or sentences themselves, etc. There are many methods, developed within NLP and Linguistics that can parse a sentence into its constituent parts and offer insight into the nature of the relationships of these elements.
 
-The structure of language is often understood to be largely intrasentential in nature. In this understanding of structure, a sentence is constructed of a finite number of structural building blocks. The parts of a sentence express relationships: a subject, a verb, maybe a direct object or an indirect object or some other modifier, and each element is a member of a subset of a finite set of structural categories: overt subjects can be nouns, or pronouns, or sentences themselves, etc. There are many methods, developed within NLP and Linguistics that can parse a sentence into its contituent parts and offer insight into the nature of the relationships of these parts.
+Perhaps less frequently discussed is how these different sentences connect and interact with each other in a document, and how connected sentences form subsections. We know language is not composed of a bunch of random sentences jumbled together. Instead, complex ideas are formed by stringing together multiple sentences. In elementary school, we learn how to write a three-point paragraph, where each of the five paragraphs has a clear purpose. One to introduce the focus of the  How might we be able to separate these separate paragraphs? How are the pieces in these paragraphs internally similar? And how are they different from surrounding paragraphs? How might we go about separating a longer document, which includes many paragraphs, with paragraphs that seem to be part of meaningful units of paragraphs?
 
-Perhaps less frequently discussed is how these different sentences connect and interact with each other in a document, and how connected sentences form subsections. We know language is not composed of a bunch of random sentences jumbled together. Instead, complex ideas are formed by stringing together multiple sentences.
-
-In elementary school, we learn how to write a three-point paragraph, where each of the five paragraphs has a clear purpose. How might we be able to separate these separate paragraphs? How are the pieces in these paragraphs internally similar? And how are they different from surrounding paragraphs? How might we go about separating a longer document, which includes many paragraphs, with paragraphs that seem to be part of meaningful units of paragraphs?
-
-TextTiling is an algorithm for doing just this. As an input it takes a string composed of paragraphs, and its output is a list of single or multi-paragraph groupings.
+TextTiling is an algorithm, and a tool available through the NLTK, for doing this. As an input it takes a string composed of paragraphs, and its output is a list of single or multi-paragraph groupings.
 
 ## 1.2. Preliminaries: Required Libraries
-
-The code in this tutorial will be run on `Python 3`. You will also need to install `Natural Language Toolkit`, `NumPy`, and `Matplotlib`. In the repository, a [.py]() file and a [Jupyter Notebook .ipynb]() file are available for download if you would like to follow along.
+The code in this tutorial will be run on `Python 3`. You will also need to install `Natural Language Toolkit`, `NumPy`, and `Matplotlib`. In the repository, a [.py]() file, a [Jupyter Notebook .ipynb]() file, and the [text file]() we will be parsing, are available for download if you would like to follow along.
 
 ### Python
 Python can be downloaded on [here](https://www.python.org/downloads/). Simply click `Download Python 3.9.5` (number subject to changes!) and follow the directions on the install.
@@ -49,13 +44,12 @@ pip3 install numpy
 pip3 install matplotlib
 ```
 
-
-## 2. TextTiling Algorithm
-`TextTiling` is a discourse segementer available as a part of the `Natural Language Toolkit`. The algorithm was developed by [Hearst (1997)](https://www.aclweb.org/anthology/J97-1003.pdf) as a way to segement text into multiparagraph units. The underlying logic is an intuitive one--sentences within topic subsections have more similarity with one another than they do with sentences in parts of a document that have a different topic. By looking across the document and comparing pieces of the text with each other, we can figure out how to
-
-The algorithm preprocesses text, separates words into pseudosentences of a certain length and compares the words of *k* length on both edges of each pseudosentence boundaries. Those boundaries that show the most dissimilarity between the last *k* sentences in the first pseudosentence and the first *k* words in thes second pseudosentence (forming 'valleys') are marked as the location where a boundary is made. These boundaries then are normalized to the closest paragraph break, giving an output of 'chunks' of paragraphs.
+## 2. NLTK TextTiling Tool
+`TextTiling` is a discourse segementer available as a part of the `Natural Language Toolkit`. The algorithm was developed by [Hearst (1997)](https://www.aclweb.org/anthology/J97-1003.pdf) as a way to segement text into multiparagraph units. The underlying logic is an intuitive one--sentences within topic subsections have more similarity with one another than they do with sentences in parts of a document that have a different topic. By moving across the document and comparing the words in one section of text with those sections before and after it, we can understand how
 
 [NLTK documentation](https://www.nltk.org/api/nltk.tokenize.html) is available, and the source code can be found [here](https://www.nltk.org/_modules/nltk/tokenize/texttiling.html).
+
+The algorithm preprocesses a document by levelling case and removing punctuation. It then tokenizes the preprocessed text, separates words into pseudosentences of *w* length and compares *k* pseudosentences before and after each pseudosentence boundaries. This is done by calculating a *depth score*, representing the similarity between the compared text before and after each break. Those boundaries that show the most dissimilarity between the words in *k* sentences on either side are marked as the location where a boundary is made. When graphically represented, these boundaries will form depth score *valleys* (to use the terminology employed by Hearst). See Hearst (1997: 50) for details on depth score calculation. These boundaries are then assigned to the closest paragraph break, giving an output of 'chunks' of paragraphs. This ensures that the segmentation of the text does not disturb paragraphs, and explains why paragraph breaks are necessary for any text input.
 
 The first thing we will need to do will be to import our libraries. For this we will need to import `texttiling` and `pylab` for a visualization of the segemented text.
 
@@ -99,9 +93,12 @@ text = preprocess(ch1)
 ```
 
 Once text has been loaded and preprocessed, we're ready to initialize the TextTilingTokenizer. There are a number of parameters, among them:
-- `w`: pseudosentence length
-- `k`: boundary comparison length
+- `w`: pseudosentence length (default `20`)
+- `k`: boundary comparison length (default `10`)
+- `stopwords`: a custom list of stopwords to be filtered out (default `None`, NLTK English stopwords)
 - `demo_mode`: `False` if a list of the text chunks is desired, `True` if a graphic representation output is desired
+
+`w` and `k` can be calibrated to document genre, but Hearst found that the defaults of `w=20` and `k=10` worked well across different document types. See Hearst (1997: 54) for a discussion of these parameters.
 
 We will initialize two objects, one for each of the `demo_mode` parameter settings.
 
@@ -137,7 +134,9 @@ for i in range(len(sections)):
  Thus, by little and little, strangers became mixed with the Islanders, and the savage Britons grew into a wild, bold people; almost savage, still, especially in the interior of the country away from the sea where the foreign settlers seldom went; but hardy, brave, and strong. 
 ```
 
-As we can see, the first three subsections formed include two two-paragraph subsections and one one-paragraph subsection. Next we will turn our attention to the TextTiling object with the parameter setting of `demo_mode=True`. This will allow us to visualize the gaps made by the 
+As we can see, the first three subsections formed include two two-paragraph subsections and one one-paragraph subsection. This may be judged a successful or a not successful parse depending on how it compares with human judgements, and we will discuss this in the following section. As most paragraphs are put in separate topic chunks, this may suggest that each paragraph is relatively independent in terms of its contents, relative to the document as a whole. Different parameter settings for `k` and `w` may yield different results.
+
+Next we will turn our attention to the TextTiling object with the parameter setting of `demo_mode=True`. This will allow us to visualize the similarity between pseudosentences and see where the *valleys* reached the threshhold for section boundary detection.
 
 ```
 #Code below adapted from NLTK TextTiling Demo (https://www.nltk.org/_modules/nltk/tokenize/texttiling.html#demo)
@@ -154,7 +153,12 @@ pylab.legend()
 pylab.show()
 ```
 
-With this, we can also access the :
+The output of the above code will be a visualization of the text, giving depth scores and section boundaries.
+
+![Demo Mode Output](https://github.com/veverica-hrdzava/discoursetutorial/blob/main/TextTiling.png)
+
+Demo Mode will also allow us to produce a list of the boundaries between pseudosentences, noting those where a boundary was detected.
+
 **Code:**
 ```python
 print(breaks)
@@ -170,9 +174,10 @@ print(pseudo_breaks)
 [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
 [7, 15, 20, 26, 30, 38, 43, 47, 54, 62, 68, 73, 79, 83, 92, 98, 104, 108, 114, 119]
 ```
-The first list has a value for each pseudosentence. A `0` indicates that it was not judged to be a subsection boundary, a `1` indicates that it was judged to be a subsection boundary. The second list simply gives the paragraph numbers corresponding to the subdivided text printout we previously printed.
+The first list has a value for each pseudosentence. A `0` indicates that it was not judged to be a subsection boundary, a `1` indicates that it was judged to be a subsection boundary. The second list simply gives the paragraph numbers corresponding to the subdivided text we previously printed.
 
-## 3. TextTiling: WindowDiff
+
+## 3. Discourse Segmentation Evaluation: NLTK WindowDiff Tool
 
 WindowDiff ([Pevzner and Hearst,2002](https://www.aclweb.org/anthology/J02-1002.pdf)) is a method that can be used to determine the success of the segmentation done by TextTiling. It is also available through [NLTK metrics](http://www.nltk.org/api/nltk.metrics.html?highlight=windowdiff#nltk.metrics.segmentation.windowdiff) and the source code can be found [here](http://www.nltk.org/_modules/nltk/metrics/segmentation.html#windowdiff).
 
@@ -206,6 +211,7 @@ the same place and the stormy sea roared round them just as it roars now But the
 ```
 
 Other segmentation can then be easily coded for comparison using WindowDiff. We will use the list of `1`s and `0`s representing pseudosentences that we produced earlier, along with a hypothetic human-annotated list. WindowDiff requires a string of `1`s and `0`s for calculation, so we will need to convert these to strings.
+
 **Code:**
 ```python
 text_tiling_segs = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
@@ -227,7 +233,7 @@ print(h_string)
 01000010000000100001000000000100000001000010001000000100000001000001000011000110001000000001000001000001000100000100001000000
 ```
 
-We will need to import the required library and then can run the comparison between the two segmented texts. This will give us a value between `0`, identical, and `1`, totally different.
+We will need to import the required library and then can run the comparison between the two segmented texts. This will give us a value between `0`, identical, and `1`, completly different. Obviously 
 
 **Code:**
 
