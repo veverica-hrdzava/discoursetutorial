@@ -181,6 +181,8 @@ The first list has a value for each pseudosentence. A `0` indicates that it was 
 
 WindowDiff ([Pevzner and Hearst,2002](https://www.aclweb.org/anthology/J02-1002.pdf)) is a method that can be used to determine the success of the segmentation done by TextTiling. It is also available through [NLTK metrics](http://www.nltk.org/api/nltk.metrics.html?highlight=windowdiff#nltk.metrics.segmentation.windowdiff) and the source code can be found [here](http://www.nltk.org/_modules/nltk/metrics/segmentation.html#windowdiff).
 
+The basic idea is that there is a window of a certain size moving over the .The most important parameter here is `k`, which refers to the window size. The default value of `k` is set to .
+
 To be able to compare the output of the TextTiling algorithm with another, we need to be able to access the pseudosentences so that they can be compared with human judgements or with other segmentation algorithms. This is not entirely straightforward, but can be easily accomplished with a few lines of code.
 
 **Code:**
@@ -233,7 +235,7 @@ print(h_string)
 01000010000000100001000000000100000001000010001000000100000001000001000011000110001000000001000001000001000100000100001000000
 ```
 
-We will need to import the required library and then can run the comparison between the two segmented texts. This will give us a value between `0`, identical, and `1`, completly different. Obviously 
+We will need to import the required library and then can run the comparison between the two segmented texts. This will give us a value between `0`, identical, and `1`, completly different. If TextTiling is highly successful on a document, we will see a value closer to 0.
 
 **Code:**
 
