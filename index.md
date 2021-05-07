@@ -181,9 +181,7 @@ The first list has a value for each pseudosentence. A `0` indicates that it was 
 
 WindowDiff ([Pevzner and Hearst,2002](https://www.aclweb.org/anthology/J02-1002.pdf)) is a method that can be used to determine the success of the segmentation done by TextTiling. It is also available through [NLTK metrics](http://www.nltk.org/api/nltk.metrics.html?highlight=windowdiff#nltk.metrics.segmentation.windowdiff) and the source code can be found [here](http://www.nltk.org/_modules/nltk/metrics/segmentation.html#windowdiff).
 
-The basic idea is that there is a window of a certain size moving over the .The most important parameter here is `k`, which refers to the window size. The default value of `k` is set to .
-
-To be able to compare the output of the TextTiling algorithm with another, we need to be able to access the pseudosentences so that they can be compared with human judgements or with other segmentation algorithms. This is not entirely straightforward, but can be easily accomplished with a few lines of code.
+To be able to compare the output of the TextTiling algorithm with another, we need to be able to access the pseudosentences so that they can be compared with another segmentation of the same document, for example, a human segmentation that we are treated as the gold standard. This is not entirely straightforward, but can be easily accomplished with a few lines of code.
 
 **Code:**
 ```python
@@ -212,7 +210,7 @@ Pseudosentence #: 5
 the same place and the stormy sea roared round them just as it roars now But the sea was not alive then with great ships and brave sailors sailing to 
 ```
 
-Other segmentation can then be easily coded for comparison using WindowDiff. We will use the list of `1`s and `0`s representing pseudosentences that we produced earlier, along with a hypothetic human-annotated list. WindowDiff requires a string of `1`s and `0`s for calculation, so we will need to convert these to strings.
+The other segmentation can then be easily coded for comparison using WindowDiff. We will use the list of `1`s and `0`s representing pseudosentences that we produced earlier, along with a hypothetical human-annotated list. WindowDiff requires a string of `1`s and `0`s for calculation, so we will need to convert these to strings.
 
 **Code:**
 ```python
@@ -235,7 +233,9 @@ print(h_string)
 01000010000000100001000000000100000001000010001000000100000001000001000011000110001000000001000001000001000100000100001000000
 ```
 
-We will need to import the required library and then can run the comparison between the two segmented texts. This will give us a value between `0`, identical, and `1`, completly different. If TextTiling is highly successful on a document, we will see a value closer to 0.
+The basic idea of `WindowDiff` is that there is a window of a certain size that moves over the two segmentations to be compared. To illustrate, let's compare `'00010000'` with an identical string. A window of `k=3` would move along the string, first looking at values 0 through 2, then 1 through 3 and so on. In this instance, the pseudosentence boundary judgements would co-occur 3 times, the value of `k`. If we compared `'00010000'` with the close, but not identical `'00100000'` the window would capture the two boundaries together 2 times. Comparing `'00000010'` with `'00010000'` would sync up 0 times. This way, if a segmentation is close, say one pseudosentence off, but not exactly the same, the score is slightly penalized, but not treated as 'completely wrong'.
+
+To run `WindowDiff` we will need to import the required library and then can run the comparison between the two segmented texts, setting `k` to `3`. This will give us a value between `0`, identical, and `1`, completly different. If TextTiling is highly successful on a document, we will see a value closer to 0.
 
 **Code:**
 
