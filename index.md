@@ -7,7 +7,7 @@ The structure of language is often understood to be largely intrasentential in n
 
 Perhaps less frequently discussed is how these different sentences connect and interact with each other in a document, and how connected sentences form subsections. We know language is not composed of a bunch of random sentences jumbled together. Instead, complex ideas are formed by stringing together multiple sentences. In elementary school, we learn how to write a three-point paragraph, where each of the five paragraphs has a clear purpose. One to introduce the focus of the  How might we be able to separate these separate paragraphs? How are the pieces in these paragraphs internally similar? And how are they different from surrounding paragraphs? How might we go about separating a longer document, which includes many paragraphs, with paragraphs that seem to be part of meaningful units of paragraphs?
 
-TextTiling is an algorithm, and a tool available through the NLTK, for doing this. As an input it takes a string composed of paragraphs, and its output is a list of single or multi-paragraph groupings.
+TextTiling is an algorithm, and a tool available through the NLTK, for doing this. As an input it takes a string composed of paragraphs, and its output is a list of single or multi-paragraph groupings. In the first part of this tutorial, we will discuss how to use `TextTiling`. This will be followed by a discussion of `WindowDiff`, a way to evaluate the success of a discourse segmentation. And finally we will briefly discuss discourse segmentation and other tools available.
 
 ## 1.2. Preliminaries: Required Libraries
 The code in this tutorial will be run on `Python 3`. You will also need to install `Natural Language Toolkit`, `NumPy`, and `Matplotlib`. In the repository, a [.py]() file, a [Jupyter Notebook .ipynb]() file, and the [text file]() we will be parsing, are available for download if you would like to follow along.
@@ -49,13 +49,14 @@ pip3 install matplotlib
 
 [NLTK documentation](https://www.nltk.org/api/nltk.tokenize.html) is available, and the source code can be found [here](https://www.nltk.org/_modules/nltk/tokenize/texttiling.html).
 
-The algorithm preprocesses a document by levelling case and removing punctuation. It then tokenizes the preprocessed text, separates words into pseudosentences of *w* length and compares *k* pseudosentences before and after each pseudosentence boundaries. This is done by calculating a *depth score*, representing the similarity between the compared text before and after each break. Those boundaries that show the most dissimilarity between the words in *k* sentences on either side are marked as the location where a boundary is made. When graphically represented, these boundaries will form depth score *valleys* (to use the terminology employed by Hearst). See Hearst (1997: 50) for details on depth score calculation. These boundaries are then assigned to the closest paragraph break, giving an output of 'chunks' of paragraphs. This ensures that the segmentation of the text does not disturb paragraphs, and explains why paragraph breaks are necessary for any text input.
+The algorithm preprocesses a document by levelling case and removing punctuation. It then tokenizes the preprocessed text, removes stopwords, and separates words into pseudosentences of *w* length and compares *k* pseudosentences before and after each pseudosentence boundaries. This is done by calculating a *depth score*, representing the similarity between the compared text before and after each break. Those boundaries that show the most dissimilarity between the words in *k* sentences on either side are marked as the location where a boundary is made. When graphically represented, these boundaries will form depth score *valleys* (to use the terminology employed by Hearst). See Hearst (1997: 50) for details on depth score calculation. These boundaries are then assigned to the closest paragraph break, giving an output of 'chunks' of paragraphs. This ensures that the segmentation of the text does not disturb paragraphs, and explains why paragraph breaks are necessary for any text input.
 
-The first thing we will need to do will be to import our libraries. For this we will need to import `texttiling` and `pylab` for a visualization of the segemented text.
+The first thing we will need to do will be to import our libraries. For `TextTiling` we will need to import `texttiling` from NLTK and `pylab` from Matplotlib for a visualization of the segemented text. We will also go ahead and import `segmentation` for use with `WindowDiff`.
 
 ```python
 from nltk.tokenize import texttiling
 from matplotlib import pylab
+from nltk.metrics import segmentation
 ```
 
 Text may need to be preprocessed. For this tutorial, we will be using a book from [Project Gutenberg](https://www.gutenberg.org/), [Charles Dickens' *A Child's History of England*](https://www.gutenberg.org/ebooks/699). Each line in the this .txt file ends with `\n`, and while it's not strictly necessary to remove these, the text is cleaner when it's removed. Because the TextTiling algorithm splits on paragraphs, we must insure that, while these extra `\n` characters are removed, the paragraph breaks remain. Failure to have paragraph breaks will result in an error when the TextTiling code is run.
@@ -174,7 +175,7 @@ print(pseudo_breaks)
 [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
 [7, 15, 20, 26, 30, 38, 43, 47, 54, 62, 68, 73, 79, 83, 92, 98, 104, 108, 114, 119]
 ```
-The first list has a value for each pseudosentence. A `0` indicates that it was not judged to be a subsection boundary, a `1` indicates that it was judged to be a subsection boundary. The second list simply gives the paragraph numbers corresponding to the subdivided text we previously printed.
+The first list has a value for each pseudosentence boundary. A `0` indicates that it was not judged to be a subsection boundary, a `1` indicates that it was judged to be a subsection boundary. The second list simply gives the pseudosentence boundary number corresponding to the subdivided text we previously printed.
 
 
 ## 3. Discourse Segmentation Evaluation: NLTK WindowDiff Tool
@@ -214,8 +215,8 @@ The other segmentation can then be easily coded for comparison using WindowDiff.
 
 **Code:**
 ```python
-text_tiling_segs = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
-human_segs = [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+text_tiling_segs = breaks
+human_segs = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
 
 tt_string = ''
 h_string = ''
@@ -230,26 +231,24 @@ print(h_string)
 **Output:**
 ```
 00000010000000100001000001000100000001000010001000000100000001000001000010000010001000000001000001000001000100000100001000000
-01000010000000100001000000000100000001000010001000000100000001000001000011000110001000000001000001000001000100000100001000000
+00010000000000100001000001000100000001000000001000000100000001001001010010000010001000000001000001000001000100000100001000000
 ```
 
 The basic idea of `WindowDiff` is that there is a window of a certain size that moves over the two segmentations to be compared. To illustrate, let's compare `'00010000'` with an identical string. A window of `k=3` would move along the string, first looking at values 0 through 2, then 1 through 3 and so on. In this instance, the pseudosentence boundary judgements would co-occur 3 times, the value of `k`. If we compared `'00010000'` with the close, but not identical `'00100000'` the window would capture the two boundaries together 2 times. Comparing `'00000010'` with `'00010000'` would sync up 0 times. This way, if a segmentation is close, say one pseudosentence off, but not exactly the same, the score is slightly penalized, but not treated as 'completely wrong'.
 
-To run `WindowDiff` we will need to import the required library and then can run the comparison between the two segmented texts, setting `k` to `3`. This will give us a value between `0`, identical, and `1`, completly different. If TextTiling is highly successful on a document, we will see a value closer to 0.
+To run `WindowDiff` already imported `segmentation` from NLTK. We can now run the comparison between the two segmented texts, setting `k` to `3`. This will give us a value between `0`, identical, and `1`, completly different, so if discourse segmentation is highly successful on a document, we will see a value closer to 0.
 
 **Code:**
 
 ```python
-from nltk.metrics import segmentation
-
 segmentation.windowdiff(tt_string,h_string,3)
 ```
 **Output:**
 
 ```
-0.08943089430894309
+0.12195121951219512
 ```
 
 ## 4. Discussion
 
-
+`TextTile` offers a fairly easy and straightforward means to break a document into different parts. There are, however, a number of other approaches to take to understanding discourse. 
