@@ -1,5 +1,5 @@
 # Discourse Segmentation Tutorial: TextTiling
-In this short Discourse Parsing tutorial, we will be discussing how to use the `TextTiling` tool available in the Natural Language Toolkit, a simple tool for breaking text up into separate topic subsections. This will be followed by a discussion of WindowDiff, which can assess the performance of machine discourse segmentation and a brief discussion of discourse segmentation and parsing broadly, with some more recent applications.
+In this short Discourse Parsing tutorial, we will be discussing how to use the `TextTiling` tool available in the Natural Language Toolkit, a simple tool for breaking text up into separate topic subsections. This will be followed by a discussion of `WindowDiff`, which can assess the performance of machine discourse segmentation and a brief discussion of discourse segmentation and parsing broadly, with some more recent applications.
 
 
 ## 1.1. Preliminaries: Introduction
@@ -180,7 +180,7 @@ The first list has a value for each pseudosentence boundary. A `0` indicates tha
 
 ## 3. Discourse Segmentation Evaluation: NLTK WindowDiff Tool
 
-WindowDiff ([Pevzner and Hearst,2002](https://www.aclweb.org/anthology/J02-1002.pdf)) is a method that can be used to determine the success of the segmentation done by TextTiling. It is also available through [NLTK metrics](http://www.nltk.org/api/nltk.metrics.html?highlight=windowdiff#nltk.metrics.segmentation.windowdiff) and the source code can be found [here](http://www.nltk.org/_modules/nltk/metrics/segmentation.html#windowdiff).
+WindowDiff ([Pevzner and Hearst, 2002](https://www.aclweb.org/anthology/J02-1002.pdf)) is a method that can be used to determine the success of the segmentation done by TextTiling. It is also available through [NLTK metrics](http://www.nltk.org/api/nltk.metrics.html?highlight=windowdiff#nltk.metrics.segmentation.windowdiff) and the source code can be found [here](http://www.nltk.org/_modules/nltk/metrics/segmentation.html#windowdiff).
 
 To be able to compare the output of the TextTiling algorithm with another, we need to be able to access the pseudosentences so that they can be compared with another segmentation of the same document, for example, a human segmentation that we are treated as the gold standard. This is not entirely straightforward, but can be easily accomplished with a few lines of code.
 
